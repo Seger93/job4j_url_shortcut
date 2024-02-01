@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.job4j.url.dto.DtoWebsite;
 import ru.job4j.url.model.Website;
 import ru.job4j.url.repository.WebsiteRepository;
 
@@ -36,6 +37,16 @@ public class SimpleWebsiteService implements WebsiteService, UserDetailsService 
         website.setLogin(encoder.encode(website.getLogin()));
         return Optional.of(websiteRepository.save(website));
     }
+
+    public Optional<DtoWebsite> checkBooleanDto(Website website) {
+        var dtoWebsite = new DtoWebsite();
+        var siteCheck = findSiteByName(website.getSite());
+        dtoWebsite.setPassword(encoder.encode(website.getPassword()));
+        dtoWebsite.setSite(siteCheck);
+        dtoWebsite.setLogin(encoder.encode(website.getLogin()));
+        return Optional.of(dtoWebsite);
+    }
+
 
     public boolean findSiteByName(String name) {
         return websiteRepository.findBySite(name).isEmpty();
