@@ -77,5 +77,4 @@ public class SimpleWebsiteService implements WebsiteService, UserDetailsService 
                     throw new UsernameNotFoundException(username);
                 });
     }
-
 }
