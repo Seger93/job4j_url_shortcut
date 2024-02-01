@@ -47,7 +47,6 @@ public class SimpleWebsiteService implements WebsiteService, UserDetailsService 
         return Optional.of(dtoWebsite);
     }
 
-
     public boolean findSiteByName(String name) {
         return websiteRepository.findBySite(name).isEmpty();
     }

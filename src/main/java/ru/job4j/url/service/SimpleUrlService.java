@@ -39,7 +39,7 @@ public class SimpleUrlService {
     }
 
     public Optional<Url> findByUniqueCode(String code) {
-        var url = urlRepository.findByUniqueCode_Code(code);
+        var url = urlRepository.findByUniqueCode(code);
         if (url.isPresent()) {
             url.get().setCount(url.get().getCount() + 1);
             urlRepository.save(url.get());

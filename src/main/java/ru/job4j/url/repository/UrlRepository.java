@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UrlRepository extends CrudRepository<Url, Integer> {
 
-    Optional<Url> findByUniqueCode_Code(String code);
+    Optional<Url> findByUniqueCode(String code);
 
     List<Url> findAll();
 }

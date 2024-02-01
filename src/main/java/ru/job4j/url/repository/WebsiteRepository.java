@@ -13,5 +13,6 @@ public interface WebsiteRepository extends CrudRepository<Website, Integer> {
     Optional<Website> findByLogin(String login);
 
     List<Website> findAll();
+
     Optional<Website> findBySite(String name);
 }
