@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.url.dto.DtoUrlStatistics;
 import ru.job4j.url.dto.DtoWebsite;
+import ru.job4j.url.model.Shortcuts;
 import ru.job4j.url.model.Website;
-import ru.job4j.url.service.SimpleUniqueCodeService;
-import ru.job4j.url.service.SimpleUrlService;
+import ru.job4j.url.service.SimpleShortcutsService;
 import ru.job4j.url.service.SimpleWebsiteService;
 
 import javax.validation.Valid;
@@ -21,10 +21,7 @@ import java.util.List;
 @RestController
 public class WebsiteController {
     private final SimpleWebsiteService websiteService;
-
-    private final SimpleUrlService simpleUrlService;
-
-    private final SimpleUniqueCodeService simpleUniqueCodeService;
+    private final SimpleShortcutsService simpleUrlService;
 
     @GetMapping("/all")
     public ResponseEntity<List<Website>> findAll() {
@@ -47,6 +44,10 @@ public class WebsiteController {
 
     @PostMapping("/registration")
     public ResponseEntity<DtoWebsite> create(@RequestBody @Valid Website website) {
+        if (websiteService.findByLogin(website.getLogin()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Пользователь с таким логином уже зарегистрирован");
+        }
         var dtoWebsite = websiteService.checkBooleanDto(website);
         if (!dtoWebsite.get().isSite()) {
             return ResponseEntity.ok()
@@ -60,8 +61,11 @@ public class WebsiteController {
     }
 
     @PostMapping("/convert")
-    public ResponseEntity<DtoWebsite> convert(@RequestBody @Valid Website website) {
-        return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+    public ResponseEntity<String> convert(@RequestBody @Valid Shortcuts shortcuts) {
+        simpleUrlService.save(shortcuts);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(shortcuts.getUniqueCode());
     }
 
     @DeleteMapping("/{id}")

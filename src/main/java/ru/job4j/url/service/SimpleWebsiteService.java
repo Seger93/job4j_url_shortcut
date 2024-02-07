@@ -34,7 +34,7 @@ public class SimpleWebsiteService implements WebsiteService, UserDetailsService 
             return Optional.empty();
         }
         website.setPassword(encoder.encode(website.getPassword()));
-        website.setLogin(encoder.encode(website.getLogin()));
+        website.setLogin(website.getLogin());
         return Optional.of(websiteRepository.save(website));
     }
 
