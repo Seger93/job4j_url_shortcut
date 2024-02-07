@@ -91,11 +91,11 @@ public class WebsiteController {
     }
 
     @GetMapping("/redirect/{code}")
-    public ResponseEntity<Void> redirect(@PathVariable String code, HttpServletResponse response) {
+    public ResponseEntity<String> redirect(@PathVariable String code) {
         var sho = shortcutsService.findByUnique(code);
         if (sho.isPresent()) {
-            response.setHeader("Location", sho.get().getUrlName());
-            return ResponseEntity.status(HttpStatus.FOUND).build();
+            String codeMessage = "HTTP CODE - 302 REDIRECT: " + sho.get().getUrlName();
+            return ResponseEntity.ok().body(codeMessage);
         } else {
             return ResponseEntity.notFound().build();
         }
