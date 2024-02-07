@@ -13,6 +13,7 @@ import ru.job4j.url.model.Website;
 import ru.job4j.url.service.SimpleShortcutsService;
 import ru.job4j.url.service.SimpleWebsiteService;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 public class WebsiteController {
     private final SimpleWebsiteService websiteService;
-    private final SimpleShortcutsService simpleUrlService;
+    private final SimpleShortcutsService shortcutsService;
 
     @GetMapping("/all")
     public ResponseEntity<List<Website>> findAll() {
@@ -62,10 +63,15 @@ public class WebsiteController {
 
     @PostMapping("/convert")
     public ResponseEntity<String> convert(@RequestBody @Valid Shortcuts shortcuts) {
-        simpleUrlService.save(shortcuts);
+        if (shortcutsService.findByUrlName(shortcuts.getUrlName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Такой URL уже существует");
+        }
+        shortcutsService.save(shortcuts);
+        String codeMessage = "code: " + shortcuts.getUniqueCode();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(shortcuts.getUniqueCode());
+                .body(codeMessage);
     }
 
     @DeleteMapping("/{id}")
@@ -77,7 +83,21 @@ public class WebsiteController {
     }
 
     @GetMapping("/statistic")
-    public List<DtoUrlStatistics> getAllUrlStatistics() {
-        return simpleUrlService.getAllUrlStatistics();
+    public ResponseEntity<List<DtoUrlStatistics>> urlStata() {
+        var stat = shortcutsService.getUrlStatistics();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(stat);
+    }
+
+    @GetMapping("/redirect/{code}")
+    public ResponseEntity<Void> redirect(@PathVariable String code, HttpServletResponse response) {
+        var sho = shortcutsService.findByUnique(code);
+        if (sho.isPresent()) {
+            response.setHeader("Location", sho.get().getUrlName());
+            return ResponseEntity.status(HttpStatus.FOUND).build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

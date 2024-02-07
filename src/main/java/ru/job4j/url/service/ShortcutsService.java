@@ -14,4 +14,6 @@ public interface ShortcutsService {
     Optional<Shortcuts> findById(Integer id);
 
     List<Shortcuts> findAll();
+
+    Optional<Shortcuts> findByUrlName(String urlName);
 }

@@ -11,5 +11,5 @@ import lombok.Setter;
 @Setter
 public class DtoUrlStatistics {
     private String url;
-    private int count;
+    private int total;
 }

@@ -14,49 +14,62 @@ import java.util.UUID;
 @AllArgsConstructor
 @Service
 public class SimpleShortcutsService implements ShortcutsService {
-    private final ShortcutsRepository urlRepository;
+    private final ShortcutsRepository shortcutsRepository;
+
+    public Optional<Shortcuts> findByUnique(String code) {
+        var shortcut = shortcutsRepository.findByUniqueCode(code);
+        if (shortcut.isPresent()) {
+            shortcutsRepository.incrementCountByCode(code);
+            return shortcut;
+        }
+        return Optional.empty();
+    }
 
     @Override
     public Optional<Shortcuts> findByUniqueCode(String code) {
-        return urlRepository.findByUniqueCode(code);
+        return shortcutsRepository.findByUniqueCode(code);
     }
 
     @Override
     public Optional<Shortcuts> save(Shortcuts url) {
-        if (urlRepository.findById(url.getId()).isPresent()) {
+        if (shortcutsRepository.findById(url.getId()).isPresent()) {
             return Optional.empty();
         }
         url.setUniqueCode(generateCode(url.getUrlName()));
-        return Optional.of(urlRepository.save(url));
+        return Optional.of(shortcutsRepository.save(url));
     }
 
     @Override
     public Optional<Shortcuts> findById(Integer id) {
-        return urlRepository.findById(id);
+        return shortcutsRepository.findById(id);
     }
 
     @Override
     public List<Shortcuts> findAll() {
-        return urlRepository.findAll();
+        return shortcutsRepository.findAll();
+    }
+
+    @Override
+    public Optional<Shortcuts> findByUrlName(String urlName) {
+        return shortcutsRepository.findByUrlName(urlName);
     }
 
     private String generateCode(String url) {
         do {
             url = UUID.randomUUID().toString().substring(0, 7);
-        } while (urlRepository.findByUniqueCode(url).isPresent());
+        } while (shortcutsRepository.findByUniqueCode(url).isPresent());
         return url;
     }
 
-    public List<DtoUrlStatistics> getAllUrlStatistics() {
-        List<Shortcuts> urls = urlRepository.findAll();
-        List<DtoUrlStatistics> urlStatisticsList = new ArrayList<>();
-
-        for (Shortcuts url : urls) {
-            DtoUrlStatistics urlStatistics = new DtoUrlStatistics();
-            urlStatistics.setUrl(url.getUrlName());
-            urlStatistics.setCount(url.getCount());
-            urlStatisticsList.add(urlStatistics);
-        }
-        return urlStatisticsList;
+    public List<DtoUrlStatistics> getUrlStatistics() {
+        var stat = shortcutsRepository.findAll();
+        List<DtoUrlStatistics> list = new ArrayList<>();
+        stat.forEach(shortcuts -> {
+            DtoUrlStatistics dto = new DtoUrlStatistics();
+            dto.setUrl(shortcuts.getUrlName());
+            dto.setTotal(shortcuts.getCount());
+            list.add(dto);
+        });
+        return list;
     }
 }
