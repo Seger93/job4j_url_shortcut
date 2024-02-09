@@ -16,7 +16,7 @@ import java.util.UUID;
 public class SimpleShortcutsService implements ShortcutsService {
     private final ShortcutsRepository shortcutsRepository;
 
-    public Optional<Shortcuts> findByUnique(String code) {
+    public Optional<Shortcuts> findByUniqueAndIncrementCount(String code) {
         var shortcut = shortcutsRepository.findByUniqueCode(code);
         if (shortcut.isPresent()) {
             shortcutsRepository.incrementCountByCode(code);
@@ -55,10 +55,7 @@ public class SimpleShortcutsService implements ShortcutsService {
     }
 
     private String generateCode(String url) {
-        do {
-            url = UUID.randomUUID().toString().substring(0, 7);
-        } while (shortcutsRepository.findByUniqueCode(url).isPresent());
-        return url;
+        return UUID.randomUUID().toString().substring(0, 7);
     }
 
     public List<DtoUrlStatistics> getUrlStatistics() {

@@ -13,7 +13,6 @@ import ru.job4j.url.model.Website;
 import ru.job4j.url.service.SimpleShortcutsService;
 import ru.job4j.url.service.SimpleWebsiteService;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -45,16 +44,7 @@ public class WebsiteController {
 
     @PostMapping("/registration")
     public ResponseEntity<DtoWebsite> create(@RequestBody @Valid Website website) {
-        if (websiteService.findByLogin(website.getLogin()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Пользователь с таким логином уже зарегистрирован");
-        }
         var dtoWebsite = websiteService.checkBooleanDto(website);
-        if (!dtoWebsite.get().isSite()) {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(dtoWebsite.get());
-        }
         this.websiteService.save(website);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -63,10 +53,6 @@ public class WebsiteController {
 
     @PostMapping("/convert")
     public ResponseEntity<String> convert(@RequestBody @Valid Shortcuts shortcuts) {
-        if (shortcutsService.findByUrlName(shortcuts.getUrlName()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Такой URL уже существует");
-        }
         shortcutsService.save(shortcuts);
         String codeMessage = "code: " + shortcuts.getUniqueCode();
         return ResponseEntity.ok()
@@ -76,10 +62,8 @@ public class WebsiteController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
-        if (websiteService.delete(id)) {
-            return ResponseEntity.ok().build();
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не удален по такому ID");
+        websiteService.delete(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/statistic")
@@ -92,12 +76,9 @@ public class WebsiteController {
 
     @GetMapping("/redirect/{code}")
     public ResponseEntity<String> redirect(@PathVariable String code) {
-        var sho = shortcutsService.findByUnique(code);
-        if (sho.isPresent()) {
-            String codeMessage = "HTTP CODE - 302 REDIRECT: " + sho.get().getUrlName();
-            return ResponseEntity.ok().body(codeMessage);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        var sho = shortcutsService.findByUniqueAndIncrementCount(code);
+        String codeMessage = "HTTP CODE - 302 REDIRECT: " + sho.get().getUrlName();
+        return ResponseEntity.ok().body(codeMessage);
+
     }
 }
