@@ -6,11 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.job4j.url.dto.DtoUrlStatistics;
 import ru.job4j.url.dto.DtoWebsite;
-import ru.job4j.url.model.Shortcuts;
 import ru.job4j.url.model.Website;
-import ru.job4j.url.service.SimpleShortcutsService;
 import ru.job4j.url.service.SimpleWebsiteService;
 
 import javax.validation.Valid;
@@ -21,7 +18,6 @@ import java.util.List;
 @RestController
 public class WebsiteController {
     private final SimpleWebsiteService websiteService;
-    private final SimpleShortcutsService shortcutsService;
 
     @GetMapping("/all")
     public ResponseEntity<List<Website>> findAll() {
@@ -51,34 +47,9 @@ public class WebsiteController {
                 .body(dtoWebsite.get());
     }
 
-    @PostMapping("/convert")
-    public ResponseEntity<String> convert(@RequestBody @Valid Shortcuts shortcuts) {
-        shortcutsService.save(shortcuts);
-        String codeMessage = "code: " + shortcuts.getUniqueCode();
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(codeMessage);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
         websiteService.delete(id);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/statistic")
-    public ResponseEntity<List<DtoUrlStatistics>> urlStata() {
-        var stat = shortcutsService.getUrlStatistics();
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(stat);
-    }
-
-    @GetMapping("/redirect/{code}")
-    public ResponseEntity<String> redirect(@PathVariable String code) {
-        var sho = shortcutsService.findByUniqueAndIncrementCount(code);
-        String codeMessage = "HTTP CODE - 302 REDIRECT: " + sho.get().getUrlName();
-        return ResponseEntity.ok().body(codeMessage);
-
     }
 }
