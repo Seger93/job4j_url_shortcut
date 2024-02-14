@@ -30,9 +30,6 @@ public class WebsiteController {
     @GetMapping("/{id}")
     public ResponseEntity<Website> findById(@PathVariable int id) {
         var website = this.websiteService.findById(id);
-        if (website.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Не найден такой Id");
-        }
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(website.get());

@@ -16,13 +16,13 @@ import java.util.UUID;
 public class SimpleShortcutsService implements ShortcutsService {
     private final ShortcutsRepository shortcutsRepository;
 
-    public Optional<Shortcuts> findByUniqueAndIncrementCount(String code) {
+    public Optional<Shortcuts> findByUniqueAndIncrementCount(String code)  {
         var shortcut = shortcutsRepository.findByUniqueCode(code);
-        if (shortcut.isPresent()) {
-            shortcutsRepository.incrementCountByCode(code);
-            return shortcut;
+        if (shortcut.isEmpty()) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        shortcutsRepository.incrementCountByCode(code);
+        return shortcut;
     }
 
     @Override
@@ -32,9 +32,6 @@ public class SimpleShortcutsService implements ShortcutsService {
 
     @Override
     public Optional<Shortcuts> save(Shortcuts url) {
-        if (shortcutsRepository.findById(url.getId()).isPresent()) {
-            return Optional.empty();
-        }
         url.setUniqueCode(generateCode(url.getUrlName()));
         return Optional.of(shortcutsRepository.save(url));
     }

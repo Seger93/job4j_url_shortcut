@@ -9,7 +9,9 @@ import ru.job4j.url.model.Shortcuts;
 import ru.job4j.url.service.SimpleShortcutsService;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RequestMapping("/shortcut")
@@ -19,12 +21,13 @@ public class ShortcutsController {
     private final SimpleShortcutsService shortcutsService;
 
     @PostMapping("/convert")
-    public ResponseEntity<String> convert(@RequestBody @Valid Shortcuts shortcuts) {
+    public ResponseEntity<Object> convert(@RequestBody @Valid Shortcuts shortcuts) {
         shortcutsService.save(shortcuts);
-        String codeMessage = "code: " + shortcuts.getUniqueCode();
+        Map<String, String> response = new HashMap<>();
+        response.put("code ", shortcuts.getUniqueCode());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(codeMessage);
+                .body(response);
     }
 
     @GetMapping("/statistic")
@@ -36,10 +39,12 @@ public class ShortcutsController {
     }
 
     @GetMapping("/redirect/{code}")
-    public ResponseEntity<String> redirect(@PathVariable String code) {
-        var sho = shortcutsService.findByUniqueAndIncrementCount(code);
-        String codeMessage = "HTTP CODE - 302 REDIRECT: " + sho.get().getUrlName();
-        return ResponseEntity.ok().body(codeMessage);
-
+    public ResponseEntity<Object> redirect(@PathVariable String code) {
+        Map<String, String> response = new HashMap<>();
+        response.put("HTTP CODE - 302 REDIRECT: ",
+                shortcutsService.findByUniqueAndIncrementCount(code).get().getUrlName());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(response);
     }
 }

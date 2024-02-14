@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -37,6 +38,18 @@ public class UrlHandler {
 
     @ExceptionHandler(value = {NoSuchElementException.class})
     public void handleExceptionElement(Exception e, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
+            put("message", "Значение не существует");
+            put("details", e.getMessage());
+        }}));
+        LOGGER.error(e.getMessage());
+    }
+
+    @ExceptionHandler(value = {ConstraintViolationException.class})
+    public void handleExceptionConstrains(Exception e, HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
